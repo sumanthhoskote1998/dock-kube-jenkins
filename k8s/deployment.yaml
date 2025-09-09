@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: myapp
-        image: sumanthhoskote/python-app:latest   # Correct image name
+        image: sumanthhoskote/python-app:latest
         ports:
         - containerPort: 80
       imagePullSecrets:
-      - name: dockerhub-secret   # Reference the secret
+      - name: dockerhub-secret   # <-- use the secret you already created
