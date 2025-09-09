@@ -2,33 +2,33 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USER = 'sumanthhoskote1998'   // Your Docker Hub username
-        IMAGE_NAME     = 'python-app'           // Repo name you created in Docker Hub
-        IMAGE_TAG      = 'latest'
+        DOCKER_IMAGE = "sumanthhoskote1998/python-app:latest"
     }
 
     stages {
-
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/sumanthhoskote1998/dock-kube-jenkins.git'
+                git branch: 'main',
+                    url: 'https://github.com/sumanthhoskote1998/dock-kube-jenkins.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 sh '''
-                    docker build -t $DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG .
+                  docker build -t $DOCKER_IMAGE .
                 '''
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([string(credentialsId: 'dockerhub-pass', variable: 'PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-pass',
+                                                  usernameVariable: 'DOCKER_USER',
+                                                  passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
-                        echo $PASS | docker login -u $DOCKERHUB_USER --password-stdin
-                        docker push $DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG
+                      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                      docker push $DOCKER_IMAGE
                     '''
                 }
             }
@@ -37,8 +37,8 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                    kubectl apply -f k8s/deployment.yaml
-                    kubectl apply -f k8s/service.yaml
+                  kubectl apply -f k8s/deployment.yaml
+                  kubectl apply -f k8s/service.yaml
                 '''
             }
         }
@@ -46,9 +46,8 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 sh '''
-                    kubectl rollout status deployment/python-app-deployment
-                    kubectl get pods -o wide
-                    kubectl get svc -o wide
+                  kubectl get pods -n default
+                  kubectl get svc -n default
                 '''
             }
         }
@@ -60,3 +59,4 @@ pipeline {
         }
     }
 }
+
