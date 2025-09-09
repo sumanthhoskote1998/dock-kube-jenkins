@@ -1,12 +1,13 @@
 pipeline {
     agent any
     environment {
-        IMAGE_NAME = "yourusername/myapp"
+        IMAGE_NAME = "sumanthhoskote/myapp"
         IMAGE_TAG = "latest"
     }
     stages {
         stage('Checkout') {
-            steps { git 'https://github.com/yourusername/myapp.git' }
+            steps { git 'https://github.com/sumanthhoskote1998/dock-kube-jenkins.git
+' }
         }
         stage('Build Docker Image') {
             steps { sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .' }
