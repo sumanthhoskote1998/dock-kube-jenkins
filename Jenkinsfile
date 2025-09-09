@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        IMAGE_NAME = "sumanthhoskote/myapp"
+        IMAGE_NAME = "sumanthhoskote/python"
         IMAGE_TAG = "latest"
     }
     stages {
