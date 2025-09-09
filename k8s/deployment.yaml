@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: myapp
-        image: yourusername/myapp:latest
+        image: sumanthhoskote/python:latest
         ports:
         - containerPort: 80
