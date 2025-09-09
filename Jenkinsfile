@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "sumanthhoskote1998/python-app:latest"
+        DOCKER_IMAGE = "sumanthhoskote/python-app:latest"
     }
 
     stages {
