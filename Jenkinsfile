@@ -2,11 +2,13 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "sumanthhoskote1998/python"
-        IMAGE_TAG = "latest"
+        DOCKERHUB_USER = 'sumanthhoskote1998'   // Your Docker Hub username
+        IMAGE_NAME     = 'python-app'           // Repo name you created in Docker Hub
+        IMAGE_TAG      = 'latest'
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/sumanthhoskote1998/dock-kube-jenkins.git'
@@ -15,33 +17,39 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+                sh '''
+                    docker build -t $DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG .
+                '''
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-id', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh 'echo $PASS | docker login -u $USER --password-stdin'
-                    sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
+                withCredentials([string(credentialsId: 'dockerhub-pass', variable: 'PASS')]) {
+                    sh '''
+                        echo $PASS | docker login -u $DOCKERHUB_USER --password-stdin
+                        docker push $DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG
+                    '''
                 }
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([file(credentialsId: 'kubeconfig-id', variable: 'KUBECONFIG')]) {
-                    sh 'kubectl apply -f k8s/deployment.yaml'
-                    sh 'kubectl apply -f k8s/service.yaml'
-                }
+                sh '''
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
+                '''
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                withCredentials([file(credentialsId: 'kubeconfig-id', variable: 'KUBECONFIG')]) {
-                    sh 'kubectl get all -o wide'
-                }
+                sh '''
+                    kubectl rollout status deployment/python-app-deployment
+                    kubectl get pods -o wide
+                    kubectl get svc -o wide
+                '''
             }
         }
     }
@@ -52,4 +60,3 @@ pipeline {
         }
     }
 }
-
