@@ -1,17 +1,24 @@
 pipeline {
     agent any
+
     environment {
-        IMAGE_NAME = "sumanthhoskote/python"
+        IMAGE_NAME = "sumanthhoskote1998/myapp"
         IMAGE_TAG = "latest"
     }
+
     stages {
-        stage('Checkout') {
-            steps { git 'https://github.com/sumanthhoskote1998/dock-kube-jenkins.git
-' }
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/sumanthhoskote1998/dock-kube-jenkins.git'
+            }
         }
+
         stage('Build Docker Image') {
-            steps { sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .' }
+            steps {
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+            }
         }
+
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-id', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
@@ -20,6 +27,7 @@ pipeline {
                 }
             }
         }
+
         stage('Deploy to Kubernetes') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig-id', variable: 'KUBECONFIG')]) {
@@ -28,6 +36,7 @@ pipeline {
                 }
             }
         }
+
         stage('Verify Deployment') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig-id', variable: 'KUBECONFIG')]) {
@@ -36,4 +45,11 @@ pipeline {
             }
         }
     }
+
+    post {
+        always {
+            echo "Pipeline completed. Check above output for status."
+        }
+    }
 }
+
